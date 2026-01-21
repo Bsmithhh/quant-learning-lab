@@ -78,6 +78,14 @@ quant-learning-lab/
 
 ---
 
+## Data Cleaning Policy
+
+- Prices (Open, High, Low, Close, Adj Close) are forward-filled to reflect unchanged value on non-trading days.
+- Daily returns are computed after price cleaning to avoid gaps.
+- Volume is **not forward-filled**; missing values are filled with `0` to indicate no trading activity.
+
+---
+
 ## Usage
 
 Each project directory contains its own README with setup instructions and usage examples.
