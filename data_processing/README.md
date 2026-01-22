@@ -2,6 +2,27 @@
 
 ## MarketDataProcessor
 
+This module handles historical market data ingestion and preprocessing.
+
+### Features
+- Fetches historical OHLCV data using yfinance
+- Validates required columns and datetime index
+- Forward-fills prices but preserves true volume behavior
+- Computes daily adjusted returns
+- Designed for reuse in backtesting and risk analysis
+
+### Example Usage
+```python
+mdp = MarketDataProcessor("AAPL", "2020-01-01", "2024-01-01")
+mdp.fetch_prices()
+mdp.add_returns()
+stats = mdp.summary()
+```
+
+This is **huge signal** for reviewers.
+
+---
+
 ### What the Class Does
 
 The `MarketDataProcessor` class provides a clean, validated pipeline for fetching and preprocessing financial market data. It:

@@ -9,6 +9,12 @@ class MarketDataProcessor:
         self.data = None
 
     def fetch_prices(self):
+        """
+        Fetch and clean historical price data.
+
+        Returns:
+            pd.DataFrame: Cleaned OHLCV price data with forward-filled prices.
+        """
         df = yf.download(self.ticker, start=self.start, end=self.end, progress=False)
 
         
@@ -17,8 +23,6 @@ class MarketDataProcessor:
 
         price_cols = ["Open", "High", "Low", "Close", "Adj Close"]
         self.data[price_cols] = self.data[price_cols].ffill()
-
-        # Policy B: missing volume -> 0
         self.data["Volume"] = self.data["Volume"].fillna(0)
 
         return self.data
@@ -51,6 +55,20 @@ class MarketDataProcessor:
 
         if self.data.index.has_duplicates:
             raise ValueError("Duplicate timestamps in index")
+    def summary(self):
+        """
+        Return basic statistics for adjusted returns.
+        """
+        if self.data is None or "ret_1d" not in self.data.columns:
+            raise RuntimeError("Returns not calculated yet")
+
+        return {
+            "mean_daily_return": self.data["ret_1d"].mean(),
+            "volatility": self.data["ret_1d"].std(),
+            "min_return": self.data["ret_1d"].min(),
+            "max_return": self.data["ret_1d"].max(),
+            "num_days": len(self.data)
+        }
 
     def build(self):
         self.fetch_prices()
