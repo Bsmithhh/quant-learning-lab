@@ -11,6 +11,19 @@ This module handles historical market data ingestion and preprocessing.
 - Computes daily adjusted returns
 - Designed for reuse in backtesting and risk analysis
 
+### Diagnostics
+
+The `diagnostics()` method reports data quality and return integrity metrics after returns have been computed.
+
+It surfaces:
+- Date range coverage
+- Mean and volatility of returns
+- Extreme returns
+- Zero-volume trading days
+- Index ordering and uniqueness checks
+
+This method is intended for validation and analysis, not mutation of data.
+
 ### Example Usage
 ```python
 mdp = MarketDataProcessor("AAPL", "2020-01-01", "2024-01-01")
