@@ -11,6 +11,27 @@ This module handles historical market data ingestion and preprocessing.
 - Computes daily adjusted returns
 - Designed for reuse in backtesting and risk analysis
 
+### Validation Pipeline
+
+The processor enforces strict validation before data can be used:
+
+**OHLC Integrity:**
+- High >= max(Open, Close, Low)
+- Low <= min(Open, Close, High)
+- All prices must be positive
+- Volume must be non-negative
+
+**Return Sanity:**
+- Returns column must exist
+- No NaN values in returns
+- Returns must fall within bounds (-95% to +500%)
+
+**Minimum History:**
+- Dataset must contain at least 60 rows by default
+- Configurable via `build(min_rows=...)`
+
+These checks prevent silent data errors from propagating into risk models and backtests.
+
 ### Diagnostics
 
 The `diagnostics()` method reports data quality and return integrity metrics after returns have been computed.

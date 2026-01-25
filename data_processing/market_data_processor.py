@@ -114,9 +114,37 @@ class MarketDataProcessor:
             'is_index_unique': is_index_unique
         }
 
-    def build(self):
+    def validate_OHLC(self):
+        if (self.data['High'] < self.data['Open']).any() or (self.data['High'] < self.data['Low']).any() or (self.data['High'] < self.data['Close']).any():
+            raise ValueError('High price constraint violated')
+        if (self.data['Low'] > self.data['Open']).any() or (self.data['Low'] > self.data['High']).any() or (self.data['Low'] > self.data['Close']).any():
+            raise ValueError('Low price constraint violated')
+        price_cols = ['Open', 'High', 'Low', 'Close', 'Adj Close']
+        if (self.data[price_cols] <= 0).any().any():
+            raise ValueError('Non-positive prices detected')
+        if (self.data['Volume'] < 0).any():
+            raise ValueError('Negative volume detected')
+
+    def validate_returns_sanity(self, period = 1):
+        if f'ret_{period}d' not in self.data.columns:
+            raise ValueError('Data is missing returns.')
+        if self.data[f'ret_{period}d'].isnull().any():
+            raise ValueError('Null value in the returns column.')
+        returns = self.data[f'ret_{period}d']
+        if (returns < -0.95).any() or (returns > 5.0).any():
+            raise ValueError('Unexpected return values')
+    def validate_min_history(self, min_rows: int = 60):
+        if self.data is None:
+            raise RuntimeError("Call fetch_prices() first")
+        if len(self.data) < min_rows:
+            raise ValueError(f'Minimum history constraint violated: {len(self.data)} rows (minimum {min_rows} required)')
+
+
+    
+    def build(self, min_rows: int = 60):
         self.fetch_prices()
-        self.validate()
-        self.add_returns(1)
-        stats = self.summary(1)
-        return self.data, stats
+        self.validate_OHLC()              
+        self.add_returns()
+        self.validate_returns_sanity()    
+        self.validate_min_history(min_rows)  
+        return self.data
