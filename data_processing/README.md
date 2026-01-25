@@ -45,6 +45,23 @@ It surfaces:
 
 This method is intended for validation and analysis, not mutation of data.
 
+### Data Persistence
+
+The processor supports saving cleaned market data to SQLite databases:
+
+**Features:**
+- Saves OHLCV data with ticker identifier
+- Preserves date index as queryable column
+- Returns confirmation dict with rows saved and database path
+- Uses `if_exists='replace'` to ensure data consistency
+
+**Usage:**
+```python
+mdp = MarketDataProcessor("AAPL", "2023-01-01", "2024-01-01")
+mdp.build()
+result = mdp.save_to_sqlite("data/market_data.db")
+```
+
 ### Example Usage
 ```python
 mdp = MarketDataProcessor("AAPL", "2020-01-01", "2024-01-01")

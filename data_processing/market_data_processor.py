@@ -1,5 +1,6 @@
 import yfinance as yf
 import pandas as pd
+import sqlite3
 
 class MarketDataProcessor:
     def __init__(self, ticker: str, start: str, end: str):
@@ -138,6 +139,23 @@ class MarketDataProcessor:
             raise RuntimeError("Call fetch_prices() first")
         if len(self.data) < min_rows:
             raise ValueError(f'Minimum history constraint violated: {len(self.data)} rows (minimum {min_rows} required)')
+
+    def save_to_sqlite(self, db_path: str, table_name: str = "prices") -> dict:
+        if self.data is None:
+            raise ValueError('No data exists.')
+        if self.data.empty:
+            raise ValueError('No data returned.')
+        copy = self.data.copy()
+        copy['ticker'] = self.ticker
+        with sqlite3.connect(db_path) as conn:
+            copy.to_sql(table_name, conn, if_exists='replace', index=True)
+        return {
+            'ticker': self.ticker,
+            'rows_saved': len(copy),
+            'table': table_name,
+            'db_path': db_path
+        }
+
 
 
     
