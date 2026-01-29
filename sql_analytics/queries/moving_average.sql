@@ -1,3 +1,7 @@
+-- Calculate 20-day simple moving average of closing prices
+-- Uses window function to preserve all rows while computing rolling average
+-- Partitioned by ticker to handle multiple assets
+
 SELECT
     ticker,
     close,
