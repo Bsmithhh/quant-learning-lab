@@ -61,7 +61,7 @@ quant-learning-lab/
 
 - [x] Market data processing pipeline
 - [x] Financial SQL analytics engine
-- [ ] Statistical risk analysis module
+- [x] Statistical risk analysis module
 - [ ] Event-driven backtesting framework
 - [ ] Transaction cost and slippage modeling
 - [ ] Walk-forward and out-of-sample evaluation
