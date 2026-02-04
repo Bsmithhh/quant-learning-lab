@@ -11,3 +11,14 @@ Base Strategy class defines interface for all trading strategies.
 - Generates SELL signal when short MA crosses below long MA
 - Configurable windows (default 20/50 days)
 - Returns HOLD when insufficient data or no crossover
+
+### Portfolio
+
+Manages cash, positions, and trade execution.
+
+**Features:**
+- Cash tracking with validation
+- Multi-ticker position management
+- Buy/sell execution with sufficient funds/shares checks
+- Trade history recording
+- Portfolio valuation using current prices
