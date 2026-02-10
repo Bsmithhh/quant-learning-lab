@@ -1,100 +1,90 @@
-# Quant Learning Lab
+# Quantitative Trading System
 
-This repository contains production-oriented quantitative development projects focused on
-financial data pipelines, statistical risk analysis, and algorithmic trading backtesting systems.
+Event-driven backtesting framework for systematic strategy evaluation.
 
-The goal of this repository is to build clean, testable, and performant systems commonly used
-in quantitative finance and trading environments.
+**Built from scratch** to understand how production trading systems work:
 
----
+- No external backtesting libraries
+- Event-driven architecture preventing look-ahead bias
+- Complete data pipeline from ingestion to analytics
 
-## Motivation
-
-Quantitative trading systems require more than predictive models. They demand robust data handling,
-reproducible research, risk-aware execution, and production-quality software engineering.
-
-This repository emphasizes:
-- System architecture over one-off scripts
-- Correctness and testing over quick results
-- Performance and scalability over toy examples
-- Explicit handling of bias, assumptions, and constraints
+**Tech Stack:** Python, Pandas, NumPy, SQLite, Matplotlib
 
 ---
 
-## Repository Structure
+## Architecture
 
-quant-learning-lab/
-├── data-processing/ # Market data ingestion and preprocessing
-├── sql-analytics/ # Financial database design and SQL analytics
-├── risk-analytics/ # Statistical risk and return analysis
-├── backtesting/ # Event-driven trading backtesting framework
-├── competitions/ # Kaggle / QuantConnect experiments
-├── tests/ # Unit and integration tests
-├── docs/ # Design notes and documentation
-└── requirements.txt
+### Components
 
----
+**MarketDataProcessor** (`data_processing/`)
 
-## Tech Stack
+- Fetches OHLCV data via yfinance
+- Validates price relationships and data integrity
+- Computes returns with forward-fill for missing data
+- Enforces minimum history requirements
 
-- **Language:** Python 3.10+
-- **Numerical Computing:** NumPy, Pandas
-- **Data Sources:** yfinance, CSV, SQL
-- **Databases:** SQLite (PostgreSQL planned)
-- **Testing:** pytest
-- **Version Control:** Git, GitHub
-- **Visualization:** matplotlib (diagnostic use only)
+**SQL Analytics** (`sql_analytics/`)
 
----
+- Persists processed data to SQLite
+- Window function queries for moving averages, returns, gaps
+- Supports time-series analysis at scale
 
-## Current Focus
+**RiskAnalyzer** (`risk_analytics/`)
 
-- Vectorized financial data processing
-- Time-series analysis and statistical risk metrics
-- SQL-based financial data modeling
-- Object-oriented backtesting system design
-- Eliminating look-ahead bias and data leakage
+- Annualized return and volatility
+- Sharpe ratio (risk-adjusted returns)
+- Maximum drawdown (cumulative returns method)
+- Value at Risk (95% confidence, historical)
+
+**Backtesting Framework** (`backtesting/`)
+
+- Event-driven execution (day-by-day simulation)
+- Strategy interface for pluggable trading logic
+- Portfolio management (cash, positions, trades)
+- DataHandler enforcing time constraints
 
 ---
 
-## Project Roadmap
+## Initial Results
 
-- [x] Market data processing pipeline
-- [x] Financial SQL analytics engine
-- [x] Statistical risk analysis module
-- [ ] Event-driven backtesting framework
-- [ ] Transaction cost and slippage modeling
-- [ ] Walk-forward and out-of-sample evaluation
+**Strategy:** Moving Average Crossover (20/50)  
+**Asset:** AAPL (2023)  
+**Return:** +0.50% vs ~48% buy-and-hold
 
----
+**Analysis:**
 
-## Engineering Principles
+Strategy significantly underperformed due to:
 
-- Explicit assumptions and constraints
-- Reproducibility over convenience
-- Modular, testable code
-- Clear separation of data, logic, and execution
-- Performance-aware implementations
+- Late signal generation (single entry in November)
+- High cash drag (invested only 1.5 months of 12)
+- No position management (couldn't sell when flat—SELL signal occurred before any BUY)
+
+**Key Insight:** System validates strategy weakness honestly: infrastructure works, strategy doesn't. This is the goal.
 
 ---
 
-## Data Cleaning Policy
+## Technical Learnings
 
-- Prices (Open, High, Low, Close, Adj Close) are forward-filled to reflect unchanged value on non-trading days.
-- Daily returns are computed after price cleaning to avoid gaps.
-- Volume is **not forward-filled**; missing values are filled with `0` to indicate no trading activity.
+- Event-driven architecture prevents look-ahead bias
+- Vectorized operations vs loops for performance
+- Why simple technical strategies rarely work in practice
+- Importance of defensive programming in financial systems
+- Separation of concerns in system design
 
----
+## Recent changes
 
-## Usage
+- **Transaction cost modeling and walk-forward validation:** Configurable commission per trade in Portfolio and Backtester; studied walk-forward validation concepts (sliding window, out-of-sample testing).
 
-Each project directory contains its own README with setup instructions and usage examples.
+## Next Steps
 
-Code is designed to be imported as modules rather than executed as standalone scripts.
+- [x] Add transaction cost modeling
+- [ ] Implement position-aware strategy logic
+- [ ] Deploy on QuantConnect for external validation
+- [ ] Add multiple strategy comparison
+- [ ] Parameter optimization framework
 
 ---
 
 ## Disclaimer
 
-Projects in this repository are for educational and research purposes only and do not constitute
-investment advice or recommendations. Past performance does not guarantee future results.
+Projects in this repository are for educational and research purposes only and do not constitute investment advice. Past performance does not guarantee future results.

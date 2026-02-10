@@ -5,7 +5,7 @@ from .strategy import Strategy
 from .portfolio import Portfolio
 
 class Backtester:
-    def __init__(self, strategy, data, ticker: str, initial_cash: float = 100000):
+    def __init__(self, strategy, data, ticker: str, initial_cash: float = 100000, commission: float = 5):
         """
             Initialize backtester.
             
@@ -16,6 +16,7 @@ class Backtester:
                 initial_cash: Starting cash
         """
         self.strategy = strategy
+        self.commission = commission
         self.data = data
         self.ticker = ticker
         self.initial_cash = initial_cash
@@ -40,12 +41,12 @@ class Backtester:
             quantity = signal['quantity']
             if signal['action'] == 'BUY':
                 try:
-                    self.portfolio.buy(self.ticker, quantity, current_price)
+                    self.portfolio.buy(self.ticker, quantity, current_price, self.commission)
                 except ValueError as e:
                     pass  # e.g. insufficient cash
             elif signal['action'] == 'SELL':
                 try:
-                    self.portfolio.sell(self.ticker, quantity, current_price)
+                    self.portfolio.sell(self.ticker, quantity, current_price, self.commission)
                 except ValueError as e:
                     pass  # e.g. insufficient shares (SELL signal before any BUY)
             else:

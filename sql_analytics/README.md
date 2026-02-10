@@ -1,6 +1,6 @@
 # SQL Analytics
 
-Financial time-series queries using SQLite and window functions.
+Database persistence and time-series queries for market data. Uses SQLite with window functions, CTEs, and date filtering. See `schema.sql` for table definitions; queries in `queries/` assume OHLCV (and optionally returns) are stored with a date column and ticker identifier.
 
 ## Queries
 

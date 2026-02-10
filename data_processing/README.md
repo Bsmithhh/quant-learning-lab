@@ -111,4 +111,4 @@ The class makes the following explicit assumptions about data handling:
 
 3. **No Forward-Fill for Volume**: Volume is **not** forward-filled. Missing volume values are filled with `0` to indicate no trading activity occurred on that day. This preserves the distinction between trading days and non-trading days, which is important for volume-based analysis and indicators.
 
-These assumptions align with the [Data Cleaning Policy](../README.md#data-cleaning-policy) documented in the main repository README.
+These assumptions are documented here so downstream modules (backtesting, risk analytics) can rely on consistent data semantics.

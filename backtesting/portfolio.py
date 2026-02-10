@@ -8,8 +8,8 @@ class Portfolio:
         self.trades: list = []
         self.cash = initial_cash
 
-    def buy(self,ticker:str,quantity:int, price:float):
-        cost = quantity * price
+    def buy(self,ticker:str,quantity:int, price:float, commission = 5):
+        cost = (quantity * price) + commission
         if self.cash < cost:
             raise ValueError('Not enough cash to make this purchase.')
         self.cash = self.cash - cost
@@ -22,11 +22,11 @@ class Portfolio:
             'cost': cost
         })
     
-    def sell(self, ticker:str, quantity:int, price:float):
+    def sell(self, ticker:str, quantity:int, price:float, commission = 5):
         current_position = self.positions.get(ticker, 0)
         if current_position < quantity:
             raise ValueError(f"Insufficient shares: trying to sell {quantity}, only have {current_position}")
-        gain = quantity * price
+        gain = (quantity * price) - commission
         self.cash = self.cash + gain
         self.positions[ticker] = current_position - quantity
         self.trades.append({
