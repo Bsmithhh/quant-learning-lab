@@ -1,9 +1,11 @@
 import sys
 sys.path.append('../..')  # Adjust path to import from root
+sys.path.append('../../risk-analytics')
 
 from data_processing.market_data_processor import MarketDataProcessor
 from backtesting.strategy import MovingAverageCrossover
 from backtesting.backtester import Backtester
+from risk_analyzer import RiskAnalyzer
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -11,9 +13,11 @@ import matplotlib.pyplot as plt
 print("Fetching AAPL data...")
 mdp = MarketDataProcessor("AAPL", "2023-01-01", "2024-01-01")
 data = mdp.build()
-# Strategy expects lowercase 'close' (use Adj Close for backtesting)
+# Backtester expects lowercase 'open' (fills) and 'close' (signals, valuation).
+# Scale Open by the same split/dividend factor as Adj Close so both are adjusted.
 data = data.copy()
 data["close"] = data["Adj Close"]
+data["open"] = data["Open"] * data["Adj Close"] / data["Close"]
 print(f"✓ Loaded {len(data)} days of data")
 
 # Step 2: Create strategy
@@ -45,6 +49,16 @@ print(f"Total Return:   {((results_df['portfolio_value'].iloc[-1] / bt.initial_c
 print(f"\nTrades executed: {len(bt.portfolio.trades)}")
 print(f"Final cash: ${results_df['current_cash'].iloc[-1]:,.2f}")
 print(f"Final positions: {results_df['portfolio'].iloc[-1]}")
+
+# Risk metrics on the strategy's own equity curve (not the stock's returns)
+strategy_returns = bt.equity_curve().pct_change().dropna()
+metrics = RiskAnalyzer(strategy_returns).get_metrics()
+print("\n=== Strategy Risk Metrics ===")
+print(f"Annualized Return:     {metrics['annualized_return']:.2%}")
+print(f"Annualized Volatility: {metrics['annualized_volatility']:.2%}")
+print(f"Sharpe Ratio (rf=2%):  {metrics['sharpe_ratio']:.2f}")
+print(f"Max Drawdown:          {metrics['max_drawdown']:.2%}")
+print(f"VaR (95%, daily):      {metrics['value_at_risk']:.2%}")
 
 # Step 6: Plot equity curve
 plt.figure(figsize=(12, 6))

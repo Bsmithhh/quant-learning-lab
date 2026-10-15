@@ -1,4 +1,4 @@
-from market_data_processor import MarketDataProcessor
+from data_processing.market_data_processor import MarketDataProcessor
 
 
 def test_returns_exist():

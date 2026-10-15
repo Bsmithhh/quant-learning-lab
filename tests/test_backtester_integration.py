@@ -14,8 +14,8 @@ def test_backtester_completes():
     idx = pd.date_range("2023-01-01", periods=100, freq="B")
     data = pd.DataFrame(
         {
-            "close": 100.0 + (pd.Series(range(100)) * 0.5),
-            "Adj Close": 100.0 + (pd.Series(range(100)) * 0.5),
+            "open": [100.0 + i * 0.5 for i in range(100)],
+            "close": [100.0 + i * 0.5 for i in range(100)],
         },
         index=idx,
     )
@@ -35,14 +35,14 @@ def test_initial_cash():
 
 
 def test_buy_updates_cash():
-    """Buy reduces cash and updates positions correctly."""
+    """Buy reduces cash by shares * price + commission and updates positions."""
     portfolio = Portfolio(initial_cash=100000)
-    portfolio.buy("AAPL", 100, 150)
-    assert portfolio.cash == 85000
+    portfolio.buy("AAPL", 100, 150, commission=5)
+    assert portfolio.cash == 84995
     assert portfolio.positions["AAPL"] == 100
     assert len(portfolio.trades) == 1
     assert portfolio.trades[0]["action"] == "BUY"
-    assert portfolio.trades[0]["cost"] == 15000
+    assert portfolio.trades[0]["cost"] == 15005
 
 
 def test_no_lookahead():

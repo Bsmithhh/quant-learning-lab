@@ -1,4 +1,5 @@
 # Portfolio class goes here
+from .events import SignalEvent, OrderEvent, FillEvent
 
 
 class Portfolio:
@@ -36,6 +37,19 @@ class Portfolio:
             'price': price,
             'gain': gain
         })
+
+    def on_signal(self, signal: SignalEvent):
+        """Turn a signal into an order, or None if we can't act on it."""
+        if signal.action == 'SELL' and self.positions.get(signal.ticker, 0) < signal.quantity:
+            return None  # can't sell shares we don't own
+        return OrderEvent(signal.date, signal.ticker, signal.action, signal.quantity)
+
+    def on_fill(self, fill: FillEvent):
+        """Update cash and positions from an executed fill."""
+        if fill.action == 'BUY':
+            self.buy(fill.ticker, fill.quantity, fill.fill_price, fill.commission)
+        else:
+            self.sell(fill.ticker, fill.quantity, fill.fill_price, fill.commission)
 
     def get_value(self, df):
         """
