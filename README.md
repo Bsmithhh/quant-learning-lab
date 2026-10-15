@@ -68,7 +68,7 @@ Strategy significantly underperformed due to:
 
 - Late signal generation (single entry in November)
 - High cash drag: in the market only ~1.5 of 12 months, and fixed 100-share sizing put at most ~19% of capital to work
-- 50-day warm-up: no signal is possible until the 50th bar (mid-March), so any earlier crossover is missed
+- 50-day warm-up: no signal is possible until the 50th bar (mid-March), so the Feb 3 bullish crossover was missed (confirmed by the warm-up test below)
 - No position management (couldn't sell when flat—SELL signal occurred before any BUY)
 
 The low volatility and drawdown reflect a portfolio that was mostly cash, not a well-controlled strategy. The negative Sharpe means it earned less than the risk-free rate.
@@ -84,7 +84,7 @@ The low volatility and drawdown reflect a portfolio that was mostly cash, not a 
 **Date:** February 10, 2026  
 **Strategy:** Moving Average Crossover (20/50)  
 **Asset:** AAPL  
-**Period:** 2023-2024 (QuantConnect run). The local comparison below was 2023 only.
+**Period:** Recorded as 2023-2024 for the QuantConnect run, though the results below match 2023 only (see open question). The local comparison was 2023.
 
 ### Results
 
@@ -105,16 +105,28 @@ The low volatility and drawdown reflect a portfolio that was mostly cash, not a 
 
 The Aug 16 and Nov 14 crossovers match the local backtest exactly. The difference is the Feb 3 BUY, which let QuantConnect participate in the Feb–Aug rally.
 
-Two candidate explanations:
+My original hypothesis was that the two data sources differed. A warm-up test ruled that out.
 
-1. **Indicator warm-up (leading hypothesis, not yet confirmed).** The local backtest starts with no price history before Jan 2023, so the 50-day MA doesn't exist until mid-March. A Feb 3 crossover is impossible locally regardless of the data. QuantConnect typically warms indicators up with history from before the start date.
-2. **Data source differences.** The original hypothesis. It's less likely given that the other two crossover dates match exactly.
+### Warm-up test (`backtesting/examples/warmup_test.py`)
 
-The two runs also covered different periods (2023–2024 vs. 2023), so the returns aren't directly comparable.
+Same yfinance data and strategy, but the backtest loads history from June 2022 so the moving averages already exist on Jan 1, 2023. Signals before 2023 are suppressed.
 
-**Planned test:** Load data from mid-2022, start trading Jan 1, 2023, and check whether a Feb 3 BUY appears locally.
+| Local run (2023) | Signals | Return |
+|---|---|---|
+| No warm-up (data starts Jan 2023) | Aug 16 SELL, Nov 14 BUY | +0.44% |
+| With warm-up (data from Jun 2022) | **Feb 3 BUY**, Aug 16 SELL, Nov 14 BUY | +2.88% |
+| Same fills, fully invested, no costs | | **+19.15%** |
 
-**Key Learning:** When two systems disagree, check assumptions about setup first (warm-up, date ranges, fill timing) before blaming the data.
+**Findings:**
+
+1. **The Feb 3 crossover is in the yfinance data.** The original backtest couldn't see it because the 50-day MA doesn't exist until the 50th bar (Mar 16, 2023). On Feb 3 the 20-day MA (137.05) crossed above the 50-day MA (136.45). With warm-up, all three signal dates match QuantConnect exactly.
+2. **The remaining return gap is position sizing.** The local strategy buys a fixed 100 shares (~15% of capital at the Feb 3 price). Investing the full portfolio on the same fills gives +19.15%, within 0.2 points of QuantConnect's +19.33%. The small residual is consistent with differences in costs and fill prices.
+
+**Conclusion:** The 0.5% vs 19.33% gap came from indicator warm-up and position sizing, not data quality.
+
+**Open question:** QuantConnect's three trades and its 19.33% return both match a 2023-only, fully invested run. I should confirm the QuantConnect algorithm's start/end dates and sizing call.
+
+**Key Learning:** When two systems disagree, check setup assumptions first (warm-up, position sizing, date ranges, fill timing) before blaming the data.
 
 ---
 
@@ -135,7 +147,8 @@ The two runs also covered different periods (2023–2024 vs. 2023), so the retur
 
 - [x] Add transaction cost modeling
 - [x] Event-driven execution with next-bar-open fills
-- [ ] Indicator warm-up test (data from mid-2022, trade from Jan 2023)
+- [x] Indicator warm-up test (data from mid-2022, trade from Jan 2023)
+- [ ] Built-in warm-up period and percent-of-equity position sizing
 - [ ] Implement position-aware strategy logic
 - [x] Deploy on QuantConnect for external validation
 - [ ] Add multiple strategy comparison
